@@ -1,0 +1,68 @@
+CREATE TABLE Borrowings (
+  user_id INT FOREIGN KEY REFERENCES Users(id),
+  book_id INT FOREIGN KEY REFERENCES Books(id),
+  CONSTRAINT PK_Borrowings PRIMARY KEY (user_id, book_id)
+);
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_borrowing
+  @bookId INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Borrowings WHERE book_id = @bookId)
+  BEGIN
+    SELECT * FROM Borrowings WHERE book_id = @bookId;
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_all_user_borrowings
+@userId INT
+AS
+BEGIN
+  SELECT * FROM Borrowings Where user_id=@userId;
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_insert_borrowing
+  @user_id INT,
+  @book_id INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Users WHERE id = @user_id) AND EXISTS (SELECT 1 FROM Books WHERE id = @book_id)
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Borrowings WHERE book_id = @book_id)
+    BEGIN
+      INSERT INTO Borrowings (user_id, book_id) VALUES (@user_id, @book_id);
+    END
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_borrowing_by_me
+  @user_id INT,
+  @book_id INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Users WHERE id = @user_id) AND EXISTS (SELECT 1 FROM Books WHERE id = @book_id)
+  BEGIN
+    SELECT * FROM Borrowings WHERE user_id = @user_id AND book_id = @book_id;
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_delete_borrowing
+  @user_id INT,
+  @book_id INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Users WHERE id = @user_id) AND EXISTS (SELECT 1 FROM Books WHERE id = @book_id)
+  BEGIN
+    DELETE FROM Borrowings WHERE user_id = @user_id AND book_id = @book_id;
+  END
+END

@@ -1,0 +1,79 @@
+﻿@model LibrarySystem.DAL.ViewModels.UserViewModel
+
+
+@{
+	ViewData["Title"] = "ConfirmAccount";
+}
+
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h3>Confirm your account so you can login ⚠️</h3>
+		@if (ViewData["Error"] is not null)
+		{
+			<h3 class="text-danger">@ViewData["Error"] 😵‍</h3>
+		}
+		@if (ViewData["Confirmed"] is not null)
+		{
+			<h3 class="text-white">@ViewData["Confirmed"] 😏</h3>
+		}
+	</div>
+</div>
+
+
+
+<div class="container">
+
+	<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+					<div class="card mb-3">
+
+						<div class="card-body">
+
+							<div class="pt-4 pb-2">
+								<h5 class="card-title text-center pb-0 fs-4">Confirm Your Account</h5>
+								<p class="text-center small">Enter the 6 digits code from your Email inbox</p>
+							</div>
+
+							<form class="row g-3 needs-validation" asp-action="ConfirmAccount">
+								<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+								<div class="col-12">
+									<label asp-for="Email" class="control-label"></label>
+									<input asp-for="Email" class="form-control" />
+									<span asp-validation-for="Email" class="text-danger"></span>
+								</div>
+								<div class="col-12">
+									<label asp-for="Token" class="control-label">Enter 6 Digits Code</label>
+									<input asp-for="Token" class="form-control" />
+									<span asp-validation-for="Token" class="text-danger"></span>
+								</div>
+
+								<div class="col-12">
+									<button class="btn btn-primary w-100" type="submit">Confirm</button>
+								</div>
+								<div class="col-12">
+									<a class="text-primary" asp-controller="User" asp-action="ResendEmail">Resend Email?</a>
+								</div>
+							</form>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</section>
+
+</div>
+
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
+

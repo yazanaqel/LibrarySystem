@@ -1,0 +1,63 @@
+﻿@model LibrarySystem.DAL.ViewModels.BorrowingViewModel
+
+@{
+	ViewData["Title"] = "Details";
+}
+
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h2>About @Model.Title 📌</h2>
+	</div>
+</div>
+
+
+<section id="about" class="about">
+	<div class="container" data-aos="fade-up">
+
+		<div class="row">
+			<div class="col-lg-6 order-1 order-lg-2" data-aos="fade-left" data-aos-delay="100">
+				<img src="~/covers/@Model.ImageURL" class="img-fluid" alt="..." />
+			</div>
+			<div class="col-lg-6 pt-4 pt-lg-0 order-2 order-lg-1 content">
+				<h3>@Model.Title</h3>
+				<p class="fst-italic">
+					Author 👦 : @Model.Author
+				</p>
+				<p class="fst-italic">
+					Book ISBN 🗝️ : @Model.ISBN
+				</p>
+				<p>
+					📜 @Model.Description
+				</p>
+				@if (Model.IsAvilable)
+				{
+					<ul>
+						<li><i class="bi bi-check-circle"></i>The Book Is Available 🤩</li>
+					</ul>
+					<a class="btn btn-success" asp-controller="Borrowing" asp-action="BorrowBook" asp-route-id="@Model.BookId">Borrow This Book</a>
+				}
+				else if (Model.IsBorrowedByMe)
+				{
+					<ul>
+						<li>This Book Is Borrowed By You 😝</li>
+					</ul>
+					<a class="btn btn-warning" asp-controller="Borrowing" asp-action="Delete" asp-route-id="@Model.BookId">Return this book</a>
+				}
+				else
+				{
+					<ul class="text-danger">
+						<li><i class="bi bi-exclamation-octagon-fill"></i>Sorry This Book Is Not Avilable For Now 😩</li>
+					</ul>
+				}
+			</div>
+
+		</div>
+		<div>
+			@if (User.IsInRole("Admin"))
+			{
+				<a class="btn btn-secondary" asp-controller="Book" asp-action="Edit" asp-route-id="@Model.BookId">Edit</a> 
+			}
+			<a class="btn btn-outline-secondary" asp-action="Index">Back to List</a>
+		</div>
+</section>

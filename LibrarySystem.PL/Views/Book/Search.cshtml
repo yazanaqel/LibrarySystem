@@ -1,0 +1,88 @@
+﻿@model IEnumerable<LibrarySystem.DAL.Models.Book>
+
+@{
+	ViewBag.Title = "Book Search";
+}
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h3>Search for book in the library 🔎</h3>
+
+		@if (ViewData["EmptySearchInput"] is not null || ViewData["Error"] is not null)
+		{
+			<h3 class="text-danger">@ViewData["EmptySearchInput"]</h3>
+			<h3 class="text-danger">@ViewData["Error"] 😵‍💫</h3>
+		}
+
+	</div>
+</div>
+
+
+
+<div class="row text-dark-emphasis">
+	<div class="col-md-4">
+		@using (Html.BeginForm("Search", "Book", FormMethod.Post))
+		{
+			<p>
+				<br />
+				@Html.RadioButton("searchType","title", true) By Title ✒️
+				<br />
+				@Html.RadioButton("searchType", "author") By Author 👦
+				<br />
+				@Html.RadioButton("searchType", "isdn") By ISBN 🗝️
+			</p>
+			<p>
+				@Html.TextBox("searchInput")
+				<input type="submit" value="Search" class="btn btn-primary" />
+			</p>
+		}
+	</div>
+</div>
+
+
+@if (Model is not null)
+{
+	<br />
+	<hr />
+
+	<section id="courses" class="courses">
+		<div class="container" data-aos="fade-up">
+
+			<div class="row" data-aos="zoom-in" data-aos-delay="100">
+
+				@foreach (var item in Model)
+				{
+					<div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+						<div class="course-item">
+							<img src="~/covers/@item.ImageURL" class="img-fluid" alt="..." />
+							<div class="course-content">
+								<div class="d-flex justify-content-between align-items-center mb-3">
+									<h4>@item.Title 📚</h4>
+								</div>
+
+								<h3 class="btn btn-outline-secondary"><a asp-controller="Book" asp-action="Details" asp-route-id="@item.Id">See Details ...</a></h3>
+								<p>@item.Description</p>
+								@if (User.IsInRole("Admin"))
+								{
+									<div class="trainer d-flex justify-content-between align-items-center">
+										<div class="trainer-rank d-flex align-items-center">
+											<a class="btn btn-outline-danger" asp-controller="Book" asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+											<a class="btn btn-secondary" asp-controller="Book" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+										</div>
+									</div>
+								}
+
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+
+		</div>
+	</section>
+
+}
+else if (ViewData["NotFound"] is not null)
+{
+	<h2 class="text-danger">@ViewData["NotFound"] 😵‍💫</h2>
+}

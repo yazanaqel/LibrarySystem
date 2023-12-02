@@ -1,0 +1,82 @@
+﻿@model LibrarySystem.DAL.Models.Book
+
+@{
+	ViewData["Title"] = "Create";
+}
+
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h3>Add New book 🆕</h3>
+		@if (ViewData["Error"] is not null)
+		{
+			<h3 class="text-danger">@ViewData["Error"] 😵‍💫</h3>
+		}
+	</div>
+</div>
+
+<div class="container" data-aos="fade-up">
+
+	<form asp-action="Create" enctype="multipart/form-data">
+		<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+		<div class="row mb-3">
+			<label asp-for="Title" class="col-sm-2 col-form-label"></label>
+			<div class="col-sm-10">
+				<input asp-for="Title" class="form-control" />
+				<span asp-validation-for="Title" class="text-danger"></span>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<label asp-for="Author" class="col-sm-2 col-form-label"></label>
+			<div class="col-sm-10">
+				<input asp-for="Author" class="form-control" />
+				<span asp-validation-for="Author" class="text-danger"></span>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<label asp-for="ISBN" class="col-sm-2 col-form-label">ISBN</label>
+			<div class="col-sm-10">
+				<input asp-for="ISBN" class="form-control" />
+				<span asp-validation-for="ISBN" class="text-danger"></span>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<label asp-for="Description" class="col-sm-2 col-form-label"></label>
+			<div class="col-sm-10">
+				<input asp-for="Description" class="form-control" />
+				<span asp-validation-for="Description" class="text-danger"></span>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<label asp-for="File" class="col-sm-2 col-form-label">Upload Cover</label>
+			<div class="col-sm-10">
+				<input type="File" name="File" asp-for="File" class="form-control" />
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<label class="col-sm-2 col-form-label">Add New Book</label>
+			<div class="col-sm-10">
+				<button type="submit" class="btn btn-primary">Save</button>
+			</div>
+		</div>
+
+	</form>
+
+</div>
+<div>
+	<a class="btn btn-outline-secondary" asp-action="Index">Back to Home</a>
+</div>
+
+
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

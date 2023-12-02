@@ -1,0 +1,68 @@
+﻿@model LibrarySystem.DAL.ViewModels.UserViewModel
+
+
+@{
+	ViewData["Title"] = "ResendEmail";
+}
+
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h3>Resend Email 🔃</h3>
+		@if (ViewData["Error"] is not null || ViewData["SentEmail"] is not null)
+		{
+			<h3 class="text-danger">@ViewData["Error"] 😵‍</h3>
+			<h3 class="text-danger">@ViewData["SentEmail"]</h3>
+		}
+	</div>
+</div>
+
+
+
+<div class="container">
+
+	<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+					<div class="card mb-3">
+
+						<div class="card-body">
+
+							<div class="pt-4 pb-2">
+								<h5 class="card-title text-center pb-0 fs-4">Resend Email</h5>
+								<p class="text-center small">Enter your emailt</p>
+							</div>
+
+							<form class="row g-3 needs-validation" asp-action="ResendEmail">
+								<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+								<div class="col-12">
+									<label asp-for="Email" class="control-label"></label>
+									<input asp-for="Email" class="form-control" />
+									<span asp-validation-for="Email" class="text-danger"></span>
+								</div>
+
+								<div class="col-12">
+									<button class="btn btn-primary w-100" type="submit">Send</button>
+								</div>
+							</form>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</section>
+
+</div>
+
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
+

@@ -1,0 +1,32 @@
+﻿@model LibrarySystem.DAL.Models.Book
+
+@{
+	ViewData["Title"] = "Borrow";
+}
+
+<h5 class="text-danger">@ViewData["Error"] 😵‍</h5>
+
+<div class="breadcrumbs" data-aos="fade-in">
+	<div class="container">
+		<h3>💡 Are you sure you want to Borrow @Model.Title ?</h3>
+	</div>
+</div>
+
+<section id="about" class="about">
+	<div class="container" data-aos="fade-up">
+
+		<div class="row">
+			<div class="col-lg-6 order-1 order-lg-2" data-aos="fade-left" data-aos-delay="100">
+				<img src="~/covers/@Model.ImageURL" class="img-fluid" alt="..." />
+			</div>
+		</div>
+		<hr />
+		<form asp-action="BorrowBook">
+			<input type="submit" value="Yes" class="btn btn-success" /> |
+			
+			<a class="btn btn-outline-secondary" asp-controller="Book" asp-action="Index">No, return to home</a>
+		</form>
+	</div>
+</section>
+
+

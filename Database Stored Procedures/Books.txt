@@ -1,0 +1,109 @@
+CREATE TABLE Books (
+  id INT IDENTITY PRIMARY KEY,
+  title VARCHAR(100) NOT NULL UNIQUE,
+  author VARCHAR(100) NOT NULL,
+  isbn VARCHAR(20) NOT NULL UNIQUE,
+  description VARCHAR(500),
+  image VARCHAR(500) NULL
+);
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_all_books
+AS
+BEGIN
+  SELECT * FROM Books ORDER BY id DESC;
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_book
+  @id INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Books WHERE id = @id)
+  BEGIN
+    SELECT * FROM Books WHERE id = @id;
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_insert_book
+  @title VARCHAR(100),
+  @author VARCHAR(100),
+  @isbn VARCHAR(20),
+  @description VARCHAR(500),
+  @image VARCHAR(500)
+AS
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM Books WHERE title = @title OR isdn = @isdn)
+  BEGIN
+    INSERT INTO Books (title, author, isbn, description, image) VALUES (@title, @author, @isbn, @description,@image);
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_update_book
+  @id INT,
+  @title VARCHAR(100),
+  @author VARCHAR(100),
+  @isbn VARCHAR(20),
+  @description VARCHAR(500),
+@image VARCHAR(500)
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Books WHERE id = @id)
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Books WHERE (title = @title OR isbn = @isbn) AND id <> @id)
+    BEGIN
+      UPDATE Books SET title = @title, author = @author, isbn = @isbn, description = @description ,image = @image WHERE id = @id;
+    END
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_delete_book
+  @id INT
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Books WHERE id = @id)
+  BEGIN
+    DELETE FROM Books WHERE id = @id;
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_search_by_title
+    @title VARCHAR(100)
+AS
+BEGIN
+    SELECT * FROM Books
+    WHERE title LIKE '%' + @title + '%'
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_search_by_author
+    @author VARCHAR(100)
+AS
+BEGIN
+    SELECT * FROM Books
+    WHERE author LIKE '%' + @author + '%'
+END
+
+-----------------------------------------------------------------------------
+
+
+CREATE PROCEDURE sp_search_by_isbn
+    @isbn VARCHAR(20)
+AS
+BEGIN
+    SELECT * FROM Books
+    WHERE isbn = @isbn
+END
+
+

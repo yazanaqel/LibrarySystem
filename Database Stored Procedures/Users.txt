@@ -1,0 +1,51 @@
+CREATE TABLE Users (
+  id INT IDENTITY PRIMARY KEY,
+  email VARCHAR(100) NOT NULL UNIQUE,
+    role VARCHAR(50) NOT NULL,
+	passwordHash varbinary(max) NOT NULL DEFAULT 0x0,
+    passwordSalt varbinary(max) NOT NULL DEFAULT 0x0,
+token varchar(100) NULL,
+    isConfermd bit NOT NULL DEFAULT 0
+);
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_insert_user
+  @email VARCHAR(100),
+  @role VARCHAR(50),
+  @passwordHash varbinary(max),
+  @passwordSalt varbinary(max),
+  @token VARCHAR(100)
+AS
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM Users WHERE email = @email)
+  BEGIN
+    INSERT INTO Users (email,role, passwordHash, passwordSalt,token,isConfermd) 
+    VALUES (@email,@role, @passwordHash, @passwordSalt,@token,0);
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_confirm_user
+  @email VARCHAR(100)
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Users WHERE email = @email)
+  BEGIN
+    UPDATE Users SET isConfermd = 1 WHERE email = @email
+  END
+END
+
+-----------------------------------------------------------------------------
+
+CREATE PROCEDURE sp_select_user
+  @email VARCHAR(100)
+AS
+BEGIN
+  IF EXISTS (SELECT 1 FROM Users WHERE email = @email)
+  BEGIN
+    SELECT * FROM Users WHERE email = @email;
+  END
+END
+

@@ -1,99 +1,94 @@
-﻿using LibrarySystem.BLL.Services.BookService;
-using LibrarySystem.BLL.Services.BorrowingService;
-using LibrarySystem.BLL.Services.UserService;
-using LibrarySystem.DAL.Models;
-using LibrarySystem.DAL.ViewModels;
+﻿using LibrarySystem.Application.Features.Book.GetOneBook;
+using LibrarySystem.Application.Features.Borrowing.Create;
+using LibrarySystem.Application.Features.Borrowing.Delete;
+using LibrarySystem.Application.Features.User.GetUser;
+using LibrarySystem.PL.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibrarySystem.PL.Controllers;
 
 [Authorize]
-public class BorrowingController : Controller
+public class BorrowingController(IMediator mediator) : Controller
 {
-	private readonly IBorrowingService _borrowingService;
-	private readonly IUserService _userService;
-	private readonly IBookService _bookService;
+    private readonly IMediator _mediator = mediator;
 
-	public BorrowingController(IBorrowingService borrowingService, IUserService userService, IBookService bookService)
-	{
-		_borrowingService = borrowingService;
-		_userService = userService;
-		_bookService = bookService;
-	}
-	public async Task<IActionResult> MyBooks()
-	{
-		try
-		{
-			var user = await _userService.SelectUserByEmail(User.Identity.Name);
+    //public async Task<IActionResult> MyBooks()
+    //{
+    //    try
+    //    {
+    //        var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-			IEnumerable<Borrowing> userBooks = await _borrowingService.SelectAllUserBorrowingsAsync(user.Id);
+    //        IEnumerable<Borrowing> userBooks = await _borrowingService.SelectAllUserBorrowingsAsync(user.Id);
 
-			if(userBooks is null || userBooks.Count() == 0)
-			{
-				ViewData["NoBooks"] = "You shoud borrow some books";
-				return View();
-			}
+    //        if(userBooks is null || userBooks.Count() == 0)
+    //        {
+    //            ViewData["NoBooks"] = "You shoud borrow some books";
+    //            return View();
+    //        }
 
-			List<Book> userBooksDetails = new List<Book>();
+    //        List<Book> userBooksDetails = new List<Book>();
 
-			foreach (var item in userBooks)
-			{
-				Book book = await _bookService.SelectBookAsync(item.BookId);
+    //        foreach(var item in userBooks)
+    //        {
+    //            var book = await _mediator.Send(new GetOneBookCommand(item.BookId));
 
-				userBooksDetails.Add(book);
-			}
-			return View(userBooksDetails);
+    //            userBooksDetails.Add(book);
+    //        }
+    //        return View(userBooksDetails);
 
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return View();
-		}
+    //    }
+    //    catch(Exception)
+    //    {
+    //        ViewData["Error"] = "Something went wrong!";
+    //        return View();
+    //    }
 
-	}
+    //}
 
-	[HttpGet]
-	public async Task<IActionResult> IsAvailable(int bookId)
-	{
-		try
-		{
-
-
-			bool isAvailable = await _borrowingService.IsAvailable(bookId);
-			var book = await _bookService.SelectBookAsync(bookId);
-
-
-			BorrowingViewModel model = new BorrowingViewModel
-			{
-				IsAvilable = isAvailable,
-				Title = book.Title,
-				Author = book.Author,
-				Description = book.Description,
-				ISBN = book.ISBN,
-				BookId = bookId
-			};
-
-			return View(model);
-		}
-		catch (Exception)
-		{
-			return RedirectToAction("Index", "Book");
-		}
-	}
-
-
-
-    public async Task<IActionResult> BorrowBook(int id)
+    [HttpGet]
+    public async Task<IActionResult> IsAvailable(int bookId)
     {
         try
         {
-            var book = await _bookService.SelectBookAsync(id);
+
+
+            //bool isAvailable = await _borrowingService.IsAvailable(bookId);
+
+            var book = await _mediator.Send(new GetOneBookCommand(bookId));
+
+
+            Book model = new Book
+            {
+                IsAvilable = false,
+                Title = book.Title,
+                Author = book.Author,
+                Description = book.Description,
+                ISBN = book.ISBN,
+                Id = book.Id
+            };
+
+            return View(model);
+        }
+        catch(Exception)
+        {
+            return RedirectToAction("Index","Book");
+        }
+    }
+
+
+
+    public async Task<IActionResult> BorrowBook([Required]int id)
+    {
+        try
+        {
+            var book = await _mediator.Send(new GetOneBookCommand(id));
 
             return View(book);
         }
-        catch (Exception)
+        catch(Exception)
         {
             ViewData["Error"] = "Something went wrong!";
             return View();
@@ -104,62 +99,56 @@ public class BorrowingController : Controller
     [ActionName("BorrowBook")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> BorrowBookConfirmed(int id)
-	{
-		try
-		{
-			var user = await _userService.SelectUserByEmail(User.Identity.Name);
+    {
+        try
+        {
+            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-			Borrowing borrowing = new Borrowing
-			{
-				UserId = user.Id,
-				BookId = id
-			};
+            await _mediator.Send(new InsertBorrowingCommand(user.Id,id));
 
-			await _borrowingService.InsertBorrowingAsync(borrowing);
+            return RedirectToAction(nameof(Success));
+        }
+        catch(Exception)
+        {
+            return RedirectToAction("Index","Book");
+        }
 
-			return RedirectToAction(nameof(Success));
-		}
-		catch (Exception)
-		{
-			return RedirectToAction("Index", "Book");
-		}
+    }
 
-	}
+    public IActionResult Success() => View();
 
-	public IActionResult Success() => View();
-
-	public async Task<IActionResult> Delete(int id)
-	{
-		try
-		{
-            var book = await _bookService.SelectBookAsync(id);
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var book = await _mediator.Send(new GetOneBookCommand(id));
 
             return View(book);
         }
-		catch (Exception)
-		{
+        catch(Exception)
+        {
             ViewData["Error"] = "Something went wrong!";
             return View();
         }
-	}
+    }
 
-	[HttpPost]
-	[ActionName("Delete")]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> DeleteConfirmed(int id)
-	{
-		try
-		{
-			var user = await _userService.SelectUserByEmail(User.Identity.Name);
+    [HttpPost]
+    [ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-			await _borrowingService.DeleteBorrowingAsync(user.Id, id);
+            await _mediator.Send(new DeleteBorrowingCommand(user.Id,id));
 
-			return RedirectToAction(nameof(MyBooks));
-		}
-		catch (Exception)
-		{
+            return View(); // RedirectToAction(nameof(MyBooks));
+        }
+        catch(Exception)
+        {
             ViewData["Error"] = "Something went wrong!";
             return View();
         }
-	}
+    }
 }

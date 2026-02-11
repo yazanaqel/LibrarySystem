@@ -1,296 +1,288 @@
-﻿using LibrarySystem.BLL.Services.BookService;
-using LibrarySystem.BLL.Services.BorrowingService;
-using LibrarySystem.BLL.Services.ImageService;
-using LibrarySystem.BLL.Services.UserService;
-using LibrarySystem.DAL.Models;
-using LibrarySystem.DAL.ViewModels;
+﻿using LibrarySystem.Application.Features.Book.Create;
+using LibrarySystem.Application.Features.Book.Delete;
+using LibrarySystem.Application.Features.Book.GetAllBooks;
+using LibrarySystem.Application.Features.Book.GetOneBook;
+using LibrarySystem.Application.Features.Book.Update;
+using LibrarySystem.PL.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibrarySystem.PL.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class BookController : Controller
+public class BookController(IMediator mediator) : Controller
 {
-	private readonly IBookService _bookService;
-	private readonly IBorrowingService _borrowingService;
-	private readonly IUserService _userService;
-	private readonly IImageService _imageService;
-	private readonly IWebHostEnvironment _webHost;
 
-	public BookController(IBookService bookService, IBorrowingService borrowingService, IUserService userService, IImageService imageService, IWebHostEnvironment webHost)
-	{
-		_bookService = bookService;
-		_borrowingService = borrowingService;
-		_userService = userService;
-		_imageService = imageService;
-		_webHost = webHost;
-	}
+    private readonly IMediator _mediator = mediator;
 
-	[AllowAnonymous]
-	public async Task<IActionResult> Index()
-	{
-		try
-		{
-			return View(await _bookService.SelectAllBooksAsync());
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return View();
-		}
-	}
-	[AllowAnonymous]
-	public ActionResult Search() => View();
+    [AllowAnonymous]
+    public async Task<IActionResult> Index()
+    {
+        try
+        {
+            var result = await _mediator.Send(new GetAllBooksCommand());
 
-	[HttpPost]
-	[AllowAnonymous]
-	public ActionResult Search(string searchType, string searchInput)
-	{
-		if (searchInput is null)
-		{
-			ViewData["EmptySearchInput"] = "Enter some words to find!";
-			return View();
-		}
-		try
-		{
-			string searchText = searchInput.Trim();
+            var books = result.Select(b => new Models.Book
+            {
+                Id = b.Id,
+                Title = b.Title,
+                ImageURL = b.ImageURL,
 
-			switch (searchType)
-			{
-				case "title":
-
-					var result = _bookService.SearchByTitle(searchText);
-
-					if(result is null || result.Count == 0)
-					{
-						ViewData["NotFound"] = "There is no books with this title";
-						return View();
-					}
-
-					return View(result);
-
-				case "author":
-
-					result = _bookService.SearchByAuthor(searchText);
-
-					if (result is null || result.Count == 0)
-					{
-						ViewData["NotFound"] = "No books here for This author";
-						return View();
-					}
-					return View(result);
-
-				case "isdn":
-
-					result = _bookService.SearchByIsbn(searchText);
-
-					if (result is null || result.Count == 0)
-					{
-						ViewData["NotFound"] = "Wrong ISDN number";
-						return View();
-					}
-					return View(result);
-
-				default:
-
-					return View();
-			}
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return View();
-		}
-	}
-
-	[AllowAnonymous]
-	public async Task<IActionResult> Details(int id)
-	{
-		ClaimsPrincipal claimUser = HttpContext.User;
-
-		try
-		{
-			var book = await _bookService.SelectBookAsync(id);
-
-			if (book is null)
-				return NotFound();
-
-			bool isAvailable = await _borrowingService.IsAvailable(id);
-
-			BorrowingViewModel model = new BorrowingViewModel
-			{
-				IsAvilable = isAvailable,
-				Title = book.Title,
-				Author = book.Author,
-				Description = book.Description,
-				ISBN = book.ISBN,
-				BookId = id,
-				ImageURL = book.ImageURL,
-			};
+            }).ToList();
 
 
-			if (!isAvailable && claimUser.Identity.IsAuthenticated)
-			{
-				var user = await _userService.SelectUserByEmail(User.Identity.Name);
 
-				bool borrowedByMe = await _borrowingService.IsBorrowedByMe(user.Id, id);
+            return View(books);
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return View();
+        }
+    }
+    [AllowAnonymous]
+    public ActionResult Search() => View();
 
-				if (borrowedByMe)
-				{
-					model.IsBorrowedByMe = true;
-				}
-			}
+    //[HttpPost]
+    //[AllowAnonymous]
+    //public ActionResult Search(string searchType,string searchInput)
+    //{
+    //    if(searchInput is null)
+    //    {
+    //        ViewData["EmptySearchInput"] = "Enter some words to find!";
+    //        return View();
+    //    }
+    //    try
+    //    {
+    //        string searchText = searchInput.Trim();
 
-			return View(model);
-		}
+    //        switch(searchType)
+    //        {
+    //            case "title":
 
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return RedirectToAction(nameof(Index));
-		}
-	}
+    //                var result = _bookService.SearchByTitle(searchText);
 
+    //                if(result is null || result.Count == 0)
+    //                {
+    //                    ViewData["NotFound"] = "There is no books with this title";
+    //                    return View();
+    //                }
 
-	public IActionResult Create() => View();
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Create(Book book)
-	{
-		try
-		{
-			var bookIsdnCheck = await _bookService.SelectBookAsync(book.Id);
+    //                return View(result);
 
+    //            case "author":
 
-			if (bookIsdnCheck is not null)
-			{
-				ViewData["Error"] = "Sorry this ISDN is exist!";
-				return View();
-			}
+    //                result = _bookService.SearchByAuthor(searchText);
 
-			string fileName = _imageService.UpLoadFile(book.File, _webHost) ?? string.Empty;
+    //                if(result is null || result.Count == 0)
+    //                {
+    //                    ViewData["NotFound"] = "No books here for This author";
+    //                    return View();
+    //                }
+    //                return View(result);
 
-			book.ImageURL = fileName;
+    //            case "isdn":
 
-			await _bookService.InsertBookAsync(book);
+    //                result = _bookService.SearchByIsbn(searchText);
 
-			return RedirectToAction(nameof(Index));
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return View();
-		}
+    //                if(result is null || result.Count == 0)
+    //                {
+    //                    ViewData["NotFound"] = "Wrong ISDN number";
+    //                    return View();
+    //                }
+    //                return View(result);
 
-	}
+    //            default:
 
+    //                return View();
+    //        }
+    //    }
+    //    catch(Exception)
+    //    {
+    //        ViewData["Error"] = "Something went wrong!";
+    //        return View();
+    //    }
+    //}
 
-	public async Task<IActionResult> Edit(int id)
-	{
-		try
-		{
-			var book = await _bookService.SelectBookAsync(id);
+    //[AllowAnonymous]
+    //public async Task<IActionResult> Details([Required] int id)
+    //{
+    //    ClaimsPrincipal claimUser = HttpContext.User;
 
+    //    try
+    //    {
+    //        var book = await _mediator.Send(new GetOneBookCommand(id));
 
-			if (book == null)
-			{
-				return NotFound();
-			}
+    //        if(book is null)
+    //            return NotFound();
 
-			return View(book);
-		}
+    //        bool isAvailable = await _borrowingService.IsAvailable(id);
 
-
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return RedirectToAction(nameof(Index));
-		}
-	}
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Edit(Book book)
-	{
-
-		try
-		{
-			var bookCheck = await _bookService.SelectBookAsync(book.Id);
-
-			if(book.File is not null)
-			{
-				string fileName = _imageService.UpLoadFile(book.File, _webHost);
-
-				if(book.ImageURL is not null)
-				{
-					_imageService.Delete(book.ImageURL, _webHost);
-				}
-
-				book.ImageURL = fileName;
-
-			}
-			else
-			{
-				book.ImageURL = bookCheck.ImageURL;
-			}
-
-			book.ISBN = bookCheck.ISBN;
-
-			await _bookService.UpdateBookAsync(book);
-
-			return RedirectToAction(nameof(Index));
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return RedirectToAction(nameof(Index));
-		}
-
-	}
-
-	public async Task<IActionResult> Delete(int id)
-	{
-		try
-		{
-			var book = await _bookService.SelectBookAsync(id);
-
-			if (book == null)
-			{
-				return NotFound();
-			}
-
-			return View(book);
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return RedirectToAction(nameof(Index));
-		}
-	}
-	[HttpPost]
-	[ActionName("Delete")]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> DeleteConfirmed(int id)
-	{
-		try
-		{
-			var book = await _bookService.SelectBookAsync(id);
+    //        BorrowingViewModel model = new BorrowingViewModel
+    //        {
+    //            IsAvilable = isAvailable,
+    //            Title = book.Title,
+    //            Author = book.Author,
+    //            Description = book.Description,
+    //            ISBN = book.ISBN,
+    //            BookId = id,
+    //            ImageURL = book.ImageURL,
+    //        };
 
 
-			if (book.ImageURL is not null)
-			{
-				_imageService.Delete(book.ImageURL, _webHost);
-			}
+    //        if(!isAvailable && claimUser.Identity.IsAuthenticated)
+    //        {
+    //            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-			await _bookService.DeleteBookAsync(id);
+    //            bool borrowedByMe = await _borrowingService.IsBorrowedByMe(user.Id,id);
 
-			return RedirectToAction(nameof(Index));
-		}
-		catch (Exception)
-		{
-			ViewData["Error"] = "Something went wrong!";
-			return RedirectToAction(nameof(Index));
-		}
-	}
+    //            if(borrowedByMe)
+    //            {
+    //                model.IsBorrowedByMe = true;
+    //            }
+    //        }
+
+    //        return View(model);
+    //    }
+
+    //    catch(Exception)
+    //    {
+    //        ViewData["Error"] = "Something went wrong!";
+    //        return RedirectToAction(nameof(Index));
+    //    }
+    //}
+
+
+    public IActionResult Create() => View();
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(Models.Book book)
+    {
+        try
+        {
+
+            var request = new CreateBookRequest(book.Title,book.Author,book.ISBN,book.Description,book.File);
+
+            //if(bookIsdnCheck is not null)
+            //{
+            //    ViewData["Error"] = "Sorry this ISDN is exist!";
+            //    return View();
+            //}
+
+
+            await _mediator.Send(new CreateBookCommand(request));
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return View();
+        }
+
+    }
+
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        try
+        {
+            var result = await _mediator.Send(new GetOneBookCommand(id));
+
+
+            if(result is null)
+            {
+                return NotFound();
+            }
+
+            var book = new Models.Book
+            {
+                Id = result.Id,
+                Title = result.Title,
+                Author = result.Author,
+                Description = result.Description,
+                ISBN = result.ISBN,
+                ImageURL = result.ImageUrl,
+            };
+
+            return View(book);
+        }
+
+
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Book book)
+    {
+
+        try
+        {
+            var request = new UpdateBookRequest(book.Id,book.Title,book.Author,book.ISBN,book.Description,book.File);
+
+            await _mediator.Send(new UpdateBookCommand(request));
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return RedirectToAction(nameof(Index));
+        }
+
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var result = await _mediator.Send(new GetOneBookCommand(id));
+
+
+            if(result is null)
+            {
+                return NotFound();
+            }
+
+            var book = new Models.Book
+            {
+                Id = result.Id,
+                Title = result.Title,
+                Author = result.Author,
+                Description = result.Description,
+                ISBN = result.ISBN,
+                ImageURL = result.ImageUrl,
+            };
+
+            return View(book);
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+    [HttpPost]
+    [ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        try
+        {
+            await _mediator.Send(new DeleteBookCommand(id));
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return RedirectToAction(nameof(Index));
+        }
+    }
 }

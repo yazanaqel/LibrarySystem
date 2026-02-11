@@ -1,4 +1,4 @@
-﻿@model LibrarySystem.DAL.ViewModels.BorrowingViewModel
+﻿@model LibrarySystem.PL.Models.Book
 
 @{
 	ViewData["Title"] = "Details";
@@ -35,14 +35,14 @@
 					<ul>
 						<li><i class="bi bi-check-circle"></i>The Book Is Available 🤩</li>
 					</ul>
-					<a class="btn btn-success" asp-controller="Borrowing" asp-action="BorrowBook" asp-route-id="@Model.BookId">Borrow This Book</a>
+					<a class="btn btn-success" asp-controller="Borrowing" asp-action="BorrowBook" asp-route-id="@Model.Id">Borrow This Book</a>
 				}
 				else if (Model.IsBorrowedByMe)
 				{
 					<ul>
 						<li>This Book Is Borrowed By You 😝</li>
 					</ul>
-					<a class="btn btn-warning" asp-controller="Borrowing" asp-action="Delete" asp-route-id="@Model.BookId">Return this book</a>
+					<a class="btn btn-warning" asp-controller="Borrowing" asp-action="Delete" asp-route-id="@Model.Id">Return this book</a>
 				}
 				else
 				{
@@ -56,7 +56,7 @@
 		<div>
 			@if (User.IsInRole("Admin"))
 			{
-				<a class="btn btn-secondary" asp-controller="Book" asp-action="Edit" asp-route-id="@Model.BookId">Edit</a> 
+				<a class="btn btn-secondary" asp-controller="Book" asp-action="Edit" asp-route-id="@Model.Id">Edit</a> 
 			}
 			<a class="btn btn-outline-secondary" asp-action="Index">Back to List</a>
 		</div>

@@ -31,12 +31,15 @@ internal static class ImageExtension
 
     public static void Delete(this string imageUrl)
     {
-        var root = Directory.GetCurrentDirectory();
+        if(imageUrl != null || !string.IsNullOrWhiteSpace(imageUrl))
+        {
+            var root = Directory.GetCurrentDirectory();
 
-        string path = Path.Combine(root,"wwwroot","covers");
+            string path = Path.Combine(root,"wwwroot","covers");
 
-        string oldPath = Path.Combine(path,imageUrl);
+            string oldPath = Path.Combine(path,imageUrl);
 
-        File.Delete(oldPath);
+            File.Delete(oldPath);
+        }
     }
 }

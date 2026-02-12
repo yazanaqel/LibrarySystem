@@ -1,8 +1,6 @@
 ﻿using LibrarySystem.Application.Extensions;
 using LibrarySystem.Domain.Repositories;
 using MediatR;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace LibrarySystem.Application.Features.Book.Create;
 

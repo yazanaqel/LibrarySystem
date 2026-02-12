@@ -1,13 +1,13 @@
-﻿using LibrarySystem.Domain.Email;
+﻿using LibrarySystem.Application.MailService;
 using LibrarySystem.Domain.Repositories;
 using MediatR;
 
 namespace LibrarySystem.Application.Features.User.ConfirmUserAccount;
 
-internal sealed class ConfirmUserAccountCommandHandler(IUserService userService,IEmailService emailService) : IRequestHandler<ConfirmUserAccountCommand,bool>
+internal sealed class ConfirmUserAccountCommandHandler(IUserService userService,EmailService emailService) : IRequestHandler<ConfirmUserAccountCommand,bool>
 {
     private readonly IUserService _userService = userService;
-    private readonly IEmailService _emailService = emailService;
+    private readonly EmailService _emailService = emailService;
 
     public async Task<bool> Handle(ConfirmUserAccountCommand command,CancellationToken cancellationToken)
     {
@@ -22,14 +22,8 @@ internal sealed class ConfirmUserAccountCommandHandler(IUserService userService,
 
         if(result)
         {
-            Email request = new Email
-            {
-                To = command.Request.Email,
-                Subject = "Thanks For Confirming Your Account :)",
-                Body = $"<h1>{user.Token}<h1/>"
-            };
+            await _emailService.SendEmailAsync(command.Request.Email,"Confirm Your Email",$"<h1>{user.Token}<h1/>");
 
-            await _emailService.SendEmail(request);
         }
 
         return result;

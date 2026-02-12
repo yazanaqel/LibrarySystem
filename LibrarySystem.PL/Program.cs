@@ -1,4 +1,5 @@
 using LibrarySystem.Application;
+using LibrarySystem.Application.MailService;
 using LibrarySystem.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -16,10 +17,9 @@ builder.Services.AddAuthentication(
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.AddInfrastructure(builder.Configuration);
-
 
 var app = builder.Build();
 

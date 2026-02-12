@@ -1,33 +1,14 @@
-﻿using LibrarySystem.Domain.Repositories;
-using Microsoft.Extensions.Configuration;
-using MailKit.Security;
-using MimeKit.Text;
-using MimeKit;
-using MailKit.Net.Smtp;
+﻿using FluentEmail.Core;
 namespace LibrarySystem.Application.MailService;
 
-public class EmailService : IEmailService
+public class EmailService(IFluentEmail email)
 {
-    private readonly IConfiguration configuration;
 
-    public EmailService(IConfiguration configuration)
+    private readonly IFluentEmail _email = email;
+    public async Task SendEmailAsync(string to,string subject,string body)
     {
-        this.configuration = configuration;
-    }
-
-    public async Task SendEmail(Domain.Email.Email request)
-    {
-        var email = new MimeMessage();
-        email.From.Add(MailboxAddress.Parse(configuration.GetSection("EmailUsername").Value));
-        email.To.Add(MailboxAddress.Parse(request.To));
-        email.Subject = request.Subject;
-        email.Body = new TextPart(TextFormat.Html) { Text = request.Body };
-
-        using var smptClient = new SmtpClient();
-        smptClient.Connect(configuration.GetSection("EmailHost").Value,587,SecureSocketOptions.StartTls);
-        smptClient.Authenticate(configuration.GetSection("EmailUsername").Value,configuration.GetSection("EmailPassword").Value);
-        await smptClient.SendAsync(email);
-        smptClient.Disconnect(true);
+        await _email.To(to).Subject(subject).Body(body,isHtml: true).SendAsync();
     }
 
 }
+

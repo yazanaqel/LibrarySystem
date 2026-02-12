@@ -1,13 +1,13 @@
-﻿using LibrarySystem.Domain.Email;
+﻿using LibrarySystem.Application.MailService;
 using LibrarySystem.Domain.Repositories;
 using MediatR;
 
 namespace LibrarySystem.Application.Features.User.ResendEmail;
 
-internal sealed class ResendEmailCommandHandler(IUserService userService,IEmailService emailService) : IRequestHandler<ResendEmailCommand>
+internal sealed class ResendEmailCommandHandler(IUserService userService,EmailService emailService) : IRequestHandler<ResendEmailCommand>
 {
     private readonly IUserService _userService = userService;
-    private readonly IEmailService _emailService = emailService;
+    private readonly EmailService _emailService = emailService;
     public async Task Handle(ResendEmailCommand command,CancellationToken cancellationToken)
     {
         var user = await _userService.GetUserByEmail(command.Request.Email);
@@ -17,14 +17,8 @@ internal sealed class ResendEmailCommandHandler(IUserService userService,IEmailS
             return;
         }
 
-        Email request = new Email
-        {
-            To = command.Request.Email,
-            Subject = "Confirm Your Email",
-            Body = $"<h1>{user.Token}<h1/>"
-        };
+        await _emailService.SendEmailAsync(command.Request.Email,"Confirm Your Email",$"<h1>{user.Token}<h1/>");
 
-        await _emailService.SendEmail(request);
     }
 
 }

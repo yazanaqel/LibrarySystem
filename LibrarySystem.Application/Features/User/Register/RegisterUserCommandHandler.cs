@@ -1,14 +1,14 @@
-﻿using LibrarySystem.Domain.Email;
+﻿using LibrarySystem.Application.MailService;
 using LibrarySystem.Domain.Repositories;
 using MediatR;
 using System.Security.Cryptography;
 
 namespace LibrarySystem.Application.Features.User.Register;
 
-internal sealed class RegisterUserCommandHandler(IUserService userService,IEmailService emailService) : IRequestHandler<RegisterUserCommand>
+internal sealed class RegisterUserCommandHandler(IUserService userService,EmailService emailService) : IRequestHandler<RegisterUserCommand>
 {
     private readonly IUserService _userService = userService;
-    private readonly IEmailService _emailService = emailService;
+    private readonly EmailService _emailService = emailService;
 
     public async Task Handle(RegisterUserCommand command,CancellationToken cancellationToken)
     {
@@ -39,14 +39,7 @@ internal sealed class RegisterUserCommandHandler(IUserService userService,IEmail
 
         });
 
-        Email request = new Email
-        {
-            To = command.Request.Email,
-            Subject = "Confirm Your Email",
-            Body = $"<h1>{token}<h1/>"
-        };
-
-        await _emailService.SendEmail(request);
+        await _emailService.SendEmailAsync(command.Request.Email,"Confirm Your Email",$"<h1>{token}<h1/>");
     }
     private void CreatePasswordHash(string password,out byte[] passwordHash,out byte[] passwordSalt)
     {

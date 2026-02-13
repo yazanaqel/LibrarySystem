@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MediatR;
 
 namespace LibrarySystem.Application.Features.Book.Search;
 
-internal class SearchBookCommand
-{
-}
+public record SearchBookCommand(string key, string value) : IRequest<List<Domain.Entities.Book>>;

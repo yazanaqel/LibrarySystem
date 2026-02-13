@@ -22,25 +22,43 @@ public class BookService(ApplicationDbContext applicationDbContext) : IBookServi
         await _applicationDbContext.SaveChangesAsync();
     }
 
-    public List<Book> SearchByAuthor(string author)
+    public async Task<List<Book>> Search(string key,string value)
     {
-        throw new NotImplementedException();
+        List<Book> books = new();
+
+        switch(key)
+        {
+            case "title":
+
+                return books = await _applicationDbContext.Books
+                    .AsNoTracking()
+                          .Where(b => b.Title.Contains(value))
+                          .Select(b => b).ToListAsync();
+
+            case "author":
+
+                return books = await _applicationDbContext.Books
+                    .AsNoTracking()
+                          .Where(b => b.Author.Contains(value))
+                          .Select(b => b).ToListAsync();
+
+            case "isdn":
+
+                return books = await _applicationDbContext.Books
+                    .AsNoTracking()
+                          .Where(b => b.ISBN.Contains(value))
+                          .Select(b => b).ToListAsync();
+
+            default:
+                return books;
+
+        }
     }
 
-    public List<Book> SearchByIsbn(string isbn)
-    {
-        throw new NotImplementedException();
-    }
-
-    public List<Book> SearchByTitle(string title)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<IEnumerable<Book>> SelectAllBooksAsync() 
+    public async Task<IEnumerable<Book>> SelectAllBooksAsync()
         => await _applicationDbContext.Books.AsNoTracking().ToListAsync();
 
-    public async Task<Book> SelectBookAsync(int id) 
+    public async Task<Book> SelectBookAsync(int id)
         => await _applicationDbContext.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
 
     public async Task UpdateBookAsync(Book book)

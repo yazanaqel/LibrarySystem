@@ -2,6 +2,7 @@
 using LibrarySystem.Application.Features.Book.Delete;
 using LibrarySystem.Application.Features.Book.GetAllBooks;
 using LibrarySystem.Application.Features.Book.GetOneBook;
+using LibrarySystem.Application.Features.Book.Search;
 using LibrarySystem.Application.Features.Book.Update;
 using LibrarySystem.PL.Models;
 using MediatR;
@@ -45,66 +46,68 @@ public class BookController(IMediator mediator) : Controller
     [AllowAnonymous]
     public ActionResult Search() => View();
 
-    //[HttpPost]
-    //[AllowAnonymous]
-    //public ActionResult Search(string searchType,string searchInput)
-    //{
-    //    if(searchInput is null)
-    //    {
-    //        ViewData["EmptySearchInput"] = "Enter some words to find!";
-    //        return View();
-    //    }
-    //    try
-    //    {
-    //        string searchText = searchInput.Trim();
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<ActionResult> Search(string searchType,string searchInput)
+    {
+        if(searchInput is null)
+        {
+            ViewData["EmptySearchInput"] = "Enter some words to find!";
+            return View();
+        }
+        try
+        {
+            string searchText = searchInput.Trim();
 
-    //        switch(searchType)
-    //        {
-    //            case "title":
+            switch(searchType)
+            {
+                case "title":
 
-    //                var result = _bookService.SearchByTitle(searchText);
+                    var titleResult = await _mediator.Send(new SearchBookCommand("title",searchText));
 
-    //                if(result is null || result.Count == 0)
-    //                {
-    //                    ViewData["NotFound"] = "There is no books with this title";
-    //                    return View();
-    //                }
+                    if(titleResult is null || titleResult.Count == 0)
+                    {
+                        ViewData["NotFound"] = "There is no books with this title";
+                        return View();
+                    }
 
-    //                return View(result);
+                    return View(titleResult.Select(x => new Book { Author = x.Author,ImageURL = x.ImageURL }));
 
-    //            case "author":
+                case "author":
 
-    //                result = _bookService.SearchByAuthor(searchText);
+                    var authorResult = await _mediator.Send(new SearchBookCommand("author",searchText));
 
-    //                if(result is null || result.Count == 0)
-    //                {
-    //                    ViewData["NotFound"] = "No books here for This author";
-    //                    return View();
-    //                }
-    //                return View(result);
+                    if(authorResult is null || authorResult.Count == 0)
+                    {
+                        ViewData["NotFound"] = "No books here for This author";
+                        return View();
+                    }
 
-    //            case "isdn":
+                    return View(authorResult.Select(x => new Book { Author = x.Author,ImageURL = x.ImageURL }));
 
-    //                result = _bookService.SearchByIsbn(searchText);
+                case "isdn":
 
-    //                if(result is null || result.Count == 0)
-    //                {
-    //                    ViewData["NotFound"] = "Wrong ISDN number";
-    //                    return View();
-    //                }
-    //                return View(result);
+                    var isdnResult = await _mediator.Send(new SearchBookCommand("isdn",searchText));
 
-    //            default:
+                    if(isdnResult is null || isdnResult.Count == 0)
+                    {
+                        ViewData["NotFound"] = "Wrong ISDN number";
+                        return View();
+                    }
 
-    //                return View();
-    //        }
-    //    }
-    //    catch(Exception)
-    //    {
-    //        ViewData["Error"] = "Something went wrong!";
-    //        return View();
-    //    }
-    //}
+                    return View(isdnResult.Select(x => new Book { Author = x.Author,ImageURL = x.ImageURL }));
+
+                default:
+
+                    return View();
+            }
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return View();
+        }
+    }
 
     //[AllowAnonymous]
     //public async Task<IActionResult> Details([Required] int id)

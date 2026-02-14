@@ -1,22 +1,30 @@
 ﻿using LibrarySystem.Domain.Repositories;
+using LibrarySystem.Domain.Shared;
 using MediatR;
 
 namespace LibrarySystem.Application.Features.Book.GetAllBooks;
 
-internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IRequestHandler<GetAllBooksCommand,List<GetAllBooksResponse>>
+internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IRequestHandler<GetAllBooksCommand,Result<List<GetAllBooksResponse>>>
 {
     private readonly IBookService _bookService = bookService;
 
-    public async Task<List<GetAllBooksResponse>> Handle(GetAllBooksCommand request,CancellationToken cancellationToken)
+    public async Task<Result<List<GetAllBooksResponse>>> Handle(GetAllBooksCommand request,CancellationToken cancellationToken)
     {
-        var booksList = await _bookService.SelectAllBooksAsync();
+        try
+        {
+            var booksList = await _bookService.SelectAllBooksAsync();
 
-        return booksList.Select(book => new GetAllBooksResponse
-        (
-            book.Id,
-            book.Title,
-            book.ImageURL ?? string.Empty
+            return Result<List<GetAllBooksResponse>>.Success(booksList.Select(book => new GetAllBooksResponse
+            (
+                book.Id,
+                book.Title,
+                book.ImageURL ?? string.Empty
 
-        )).ToList();
+            )).ToList());
+        }
+        catch(Exception ex)
+        {
+            return Result<List<GetAllBooksResponse>>.Failure(ex.Message);
+        }
     }
 }

@@ -8,7 +8,6 @@ using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibrarySystem.PL.Controllers;
 
@@ -21,11 +20,11 @@ public class BookController(IMediator mediator) : Controller
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
-        try
-        {
-            var result = await _mediator.Send(new GetAllBooksCommand());
+        var result = await _mediator.Send(new GetAllBooksCommand());
 
-            var books = result.Select(b => new Models.Book
+        if(result.IsSuccess)
+        {
+            var books = result.Value.Select(b => new Models.Book
             {
                 Id = b.Id,
                 Title = b.Title,
@@ -33,15 +32,12 @@ public class BookController(IMediator mediator) : Controller
 
             }).ToList();
 
-
-
             return View(books);
         }
-        catch(Exception)
-        {
-            ViewData["Error"] = "Something went wrong!";
-            return View();
-        }
+
+        ViewData["Error"] = $"{result.Error}";
+
+        return View();
     }
     [AllowAnonymous]
     public ActionResult Search() => View();
@@ -173,7 +169,6 @@ public class BookController(IMediator mediator) : Controller
             //    ViewData["Error"] = "Sorry this ISDN is exist!";
             //    return View();
             //}
-
 
             await _mediator.Send(new CreateBookCommand(request));
 

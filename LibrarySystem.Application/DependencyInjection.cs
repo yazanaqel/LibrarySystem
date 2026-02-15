@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+using LibrarySystem.Application.Behaviors;
 using LibrarySystem.Application.MailService;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,16 +16,18 @@ public static class DependencyInjection
 
         var emailSettings = configuration.GetSection(nameof(EmailSettings)).Get<EmailSettings>();
 
-        services
-            .AddFluentEmail(emailSettings.SenderEmail,emailSettings.SenderName)
+        services.AddFluentEmail(emailSettings.SenderEmail,emailSettings.SenderName)
             .AddSmtpSender(emailSettings.Host,emailSettings.Port,emailSettings.Username,emailSettings.Password);
+
+        services.AddScoped<EmailService>();
 
         services.AddMediatR(options => options.RegisterServicesFromAssemblies(
             AssemblyProvider.GetAssembly()));
 
         services.AddValidatorsFromAssembly(AssemblyProvider.GetAssembly(),includeInternalTypes: true);
 
-        services.AddScoped<EmailService>();
+        services.AddTransient(typeof(IPipelineBehavior<,>),typeof(LoggingBehavior<,>));
+
 
         return services;
     }

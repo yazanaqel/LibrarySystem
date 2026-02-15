@@ -15,6 +15,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         modelBuilder.Entity<Borrowing>()
             .HasKey(b => new { b.UserId,b.BookId });
+
+        modelBuilder.Entity<Book>()
+            .HasIndex(b => b.ISBN).IsUnique();
     }
 
 }

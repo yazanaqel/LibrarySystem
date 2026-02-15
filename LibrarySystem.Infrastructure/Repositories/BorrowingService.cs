@@ -1,31 +1,33 @@
 ﻿using LibrarySystem.Domain.Entities;
 using LibrarySystem.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibrarySystem.Infrastructure.Repositories;
 
-internal class BorrowingService : IBorrowingService
+internal class BorrowingService(ApplicationDbContext applicationDbContext) : IBorrowingService
 {
-    public Task DeleteBorrowingAsync(int userId,int bookId)
+    private readonly ApplicationDbContext _applicationDbContext = applicationDbContext;
+
+    public async Task DeleteBorrowingAsync(Borrowing borrowing)
     {
-        throw new NotImplementedException();
+        await _applicationDbContext.Borrowings
+            .Where(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId)
+            .ExecuteDeleteAsync();
     }
 
-    public Task InsertBorrowingAsync(int userId,int bookId)
+    public async Task InsertBorrowingAsync(Borrowing borrowing)
     {
-        throw new NotImplementedException();
+        _applicationDbContext.Borrowings.Add(borrowing);
+
+        await _applicationDbContext.SaveChangesAsync();
     }
 
-    public Task<bool> IsAvailable(int id)
+    public async Task<bool> IsBorrowedByMe(Borrowing borrowing)
     {
-        throw new NotImplementedException();
+        return await _applicationDbContext.Borrowings.AnyAsync(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId);
     }
 
-    public Task<bool> IsBorrowedByMe(int userId,int bookId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Borrowing>> SelectAllUserBorrowingsAsync(int userId)
+    public Task<IEnumerable<Book>> SelectAllUserBorrowingsAsync(int userId)
     {
         throw new NotImplementedException();
     }

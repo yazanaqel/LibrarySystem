@@ -1,6 +1,8 @@
 ﻿using LibrarySystem.Application.Features.Book.GetOneBook;
+using LibrarySystem.Application.Features.Book.IsAvailable;
 using LibrarySystem.Application.Features.Borrowing.Create;
 using LibrarySystem.Application.Features.Borrowing.Delete;
+using LibrarySystem.Application.Features.Borrowing.GetUserBorrowing;
 using LibrarySystem.Application.Features.User.GetUser;
 using LibrarySystem.PL.Models;
 using MediatR;
@@ -15,38 +17,33 @@ public class BorrowingController(IMediator mediator) : Controller
 {
     private readonly IMediator _mediator = mediator;
 
-    //public async Task<IActionResult> MyBooks()
-    //{
-    //    try
-    //    {
-    //        var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
+    public async Task<IActionResult> MyBooks()
+    {
+        try
+        {
+            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-    //        IEnumerable<Borrowing> userBooks = await _borrowingService.SelectAllUserBorrowingsAsync(user.Id);
+            var userBooks = await _mediator.Send(new GetUserBorrowingCommand(user.Id));
 
-    //        if(userBooks is null || userBooks.Count() == 0)
-    //        {
-    //            ViewData["NoBooks"] = "You shoud borrow some books";
-    //            return View();
-    //        }
+            if(userBooks is null || userBooks.Count() == 0)
+            {
+                ViewData["NoBooks"] = "You shoud borrow some books";
+                return View();
+            }
 
-    //        List<Book> userBooksDetails = new List<Book>();
+            List<Book> userBooksDetails = userBooks
+                .Select(b => new Book { Id = b.Id,Title = b.Title,ImageURL = b.ImageURL }).ToList();
 
-    //        foreach(var item in userBooks)
-    //        {
-    //            var book = await _mediator.Send(new GetOneBookCommand(item.BookId));
+            return View(userBooksDetails);
 
-    //            userBooksDetails.Add(book);
-    //        }
-    //        return View(userBooksDetails);
+        }
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return View();
+        }
 
-    //    }
-    //    catch(Exception)
-    //    {
-    //        ViewData["Error"] = "Something went wrong!";
-    //        return View();
-    //    }
-
-    //}
+    }
 
     [HttpGet]
     public async Task<IActionResult> IsAvailable(int bookId)
@@ -55,14 +52,14 @@ public class BorrowingController(IMediator mediator) : Controller
         {
 
 
-            //bool isAvailable = await _borrowingService.IsAvailable(bookId);
+            bool isAvailable = await _mediator.Send(new IsAvailableCommand(bookId));
 
             var book = await _mediator.Send(new GetOneBookCommand(bookId));
 
 
             Book model = new Book
             {
-                IsAvilable = false,
+                IsAvilable = isAvailable,
                 Title = book.Title,
                 Author = book.Author,
                 Description = book.Description,
@@ -80,7 +77,7 @@ public class BorrowingController(IMediator mediator) : Controller
 
 
 
-    public async Task<IActionResult> BorrowBook([Required]int id)
+    public async Task<IActionResult> BorrowBook([Required] int id)
     {
         try
         {
@@ -143,7 +140,7 @@ public class BorrowingController(IMediator mediator) : Controller
 
             await _mediator.Send(new DeleteBorrowingCommand(user.Id,id));
 
-            return View(); // RedirectToAction(nameof(MyBooks));
+            return RedirectToAction(nameof(MyBooks));
         }
         catch(Exception)
         {

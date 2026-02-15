@@ -9,6 +9,12 @@ internal class InsertBorrowingCommandHandler(IBorrowingService borrowingService)
 
     public async Task Handle(InsertBorrowingCommand request,CancellationToken cancellationToken)
     {
-        await _borrowingService.InsertBorrowingAsync(request.userId,request.bookId);
+        Domain.Entities.Borrowing borrowing = new Domain.Entities.Borrowing
+        {
+            UserId = request.userId,
+            BookId = request.bookId
+        };
+
+        await _borrowingService.InsertBorrowingAsync(borrowing);
     }
 }

@@ -9,6 +9,12 @@ public class DeleteBorrowingCommandHandler(IBorrowingService BorrowingService) :
 
     public async Task Handle(DeleteBorrowingCommand request,CancellationToken cancellationToken)
     {
-        await _borrowingService.DeleteBorrowingAsync(request.userId,request.bookId);
+        Domain.Entities.Borrowing borrowing = new Domain.Entities.Borrowing
+        {
+            UserId = request.userId,
+            BookId = request.bookId
+        };
+
+        await _borrowingService.DeleteBorrowingAsync(borrowing);
     }
 }

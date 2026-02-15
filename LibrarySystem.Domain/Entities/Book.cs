@@ -33,8 +33,7 @@ public class Book
     public string Description { get; set; } = string.Empty;
 
 
-    //public IFormFile? File { get; set; }
     public string? ImageURL { get; set; }
 
-
+    public bool IsAvailable { get; set; }
 }

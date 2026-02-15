@@ -2,12 +2,17 @@
 using LibrarySystem.Application.Features.Book.Delete;
 using LibrarySystem.Application.Features.Book.GetAllBooks;
 using LibrarySystem.Application.Features.Book.GetOneBook;
+using LibrarySystem.Application.Features.Book.IsAvailable;
 using LibrarySystem.Application.Features.Book.Search;
 using LibrarySystem.Application.Features.Book.Update;
+using LibrarySystem.Application.Features.Borrowing.IsBorrowedByMe;
+using LibrarySystem.Application.Features.User.GetUser;
 using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace LibrarySystem.PL.Controllers;
 
@@ -105,53 +110,53 @@ public class BookController(IMediator mediator) : Controller
         }
     }
 
-    //[AllowAnonymous]
-    //public async Task<IActionResult> Details([Required] int id)
-    //{
-    //    ClaimsPrincipal claimUser = HttpContext.User;
+    [AllowAnonymous]
+    public async Task<IActionResult> Details([Required] int id)
+    {
+        ClaimsPrincipal claimUser = HttpContext.User;
 
-    //    try
-    //    {
-    //        var book = await _mediator.Send(new GetOneBookCommand(id));
+        try
+        {
+            var book = await _mediator.Send(new GetOneBookCommand(id));
 
-    //        if(book is null)
-    //            return NotFound();
+            if(book is null)
+                return NotFound();
 
-    //        bool isAvailable = await _borrowingService.IsAvailable(id);
+            bool isAvailable = await _mediator.Send(new IsAvailableCommand(id));
 
-    //        BorrowingViewModel model = new BorrowingViewModel
-    //        {
-    //            IsAvilable = isAvailable,
-    //            Title = book.Title,
-    //            Author = book.Author,
-    //            Description = book.Description,
-    //            ISBN = book.ISBN,
-    //            BookId = id,
-    //            ImageURL = book.ImageURL,
-    //        };
+            Book model = new Book
+            {
+                IsAvilable = isAvailable,
+                Title = book.Title,
+                Author = book.Author,
+                Description = book.Description,
+                ISBN = book.ISBN,
+                Id = id,
+                ImageURL = book.ImageUrl,
+            };
 
 
-    //        if(!isAvailable && claimUser.Identity.IsAuthenticated)
-    //        {
-    //            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
+            if(!isAvailable && claimUser.Identity.IsAuthenticated)
+            {
+                var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
-    //            bool borrowedByMe = await _borrowingService.IsBorrowedByMe(user.Id,id);
+                bool borrowedByMe = await _mediator.Send(new IsBorrowedByMeCommand(user.Id,id));
 
-    //            if(borrowedByMe)
-    //            {
-    //                model.IsBorrowedByMe = true;
-    //            }
-    //        }
+                if(borrowedByMe)
+                {
+                    model.IsBorrowedByMe = true;
+                }
+            }
 
-    //        return View(model);
-    //    }
+            return View(model);
+        }
 
-    //    catch(Exception)
-    //    {
-    //        ViewData["Error"] = "Something went wrong!";
-    //        return RedirectToAction(nameof(Index));
-    //    }
-    //}
+        catch(Exception)
+        {
+            ViewData["Error"] = "Something went wrong!";
+            return RedirectToAction(nameof(Index));
+        }
+    }
 
 
     public IActionResult Create() => View();

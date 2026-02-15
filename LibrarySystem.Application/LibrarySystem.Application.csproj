@@ -19,8 +19,4 @@
     <ProjectReference Include="..\LibrarySystem.Domain\LibrarySystem.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Borrowing\GetUserBorrowing\" />
-  </ItemGroup>
-
 </Project>

@@ -10,13 +10,22 @@ internal class BorrowingService(ApplicationDbContext applicationDbContext) : IBo
 
     public async Task DeleteBorrowingAsync(Borrowing borrowing)
     {
-        await _applicationDbContext.Borrowings
-            .Where(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId)
-            .ExecuteDeleteAsync();
+        var strategy = _applicationDbContext.Database.CreateExecutionStrategy();
 
-        await _applicationDbContext.Books
-            .Where(i => i.Id == borrowing.BookId)
-            .ExecuteUpdateAsync(x => x.SetProperty(p => p.IsAvailable,true));
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await _applicationDbContext.Database.BeginTransactionAsync();
+
+            await _applicationDbContext.Borrowings
+                .Where(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId)
+                .ExecuteDeleteAsync();
+
+            await _applicationDbContext.Books
+                .Where(i => i.Id == borrowing.BookId)
+                .ExecuteUpdateAsync(x => x.SetProperty(p => p.IsAvailable,true));
+
+            await transaction.CommitAsync();
+        });
     }
 
     public async Task InsertBorrowingAsync(Borrowing borrowing)

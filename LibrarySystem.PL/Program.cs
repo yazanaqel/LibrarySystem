@@ -1,5 +1,4 @@
 using LibrarySystem.Application;
-using LibrarySystem.Application.MailService;
 using LibrarySystem.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Serilog;

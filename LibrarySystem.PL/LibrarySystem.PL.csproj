@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LibrarySystem.Application\LibrarySystem.Application.csproj" />
-    <ProjectReference Include="..\LibrarySystem.Infrastructure\LibrarySystem.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

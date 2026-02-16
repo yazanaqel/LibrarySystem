@@ -35,5 +35,5 @@ public class Book
 
     public string? ImageURL { get; set; }
 
-    public bool IsAvailable { get; set; }
+    public bool IsAvailable { get; set; } = true;
 }

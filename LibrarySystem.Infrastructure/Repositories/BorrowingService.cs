@@ -13,11 +13,19 @@ internal class BorrowingService(ApplicationDbContext applicationDbContext) : IBo
         await _applicationDbContext.Borrowings
             .Where(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId)
             .ExecuteDeleteAsync();
+
+        await _applicationDbContext.Books
+            .Where(i => i.Id == borrowing.BookId)
+            .ExecuteUpdateAsync(x => x.SetProperty(p => p.IsAvailable,true));
     }
 
     public async Task InsertBorrowingAsync(Borrowing borrowing)
     {
         _applicationDbContext.Borrowings.Add(borrowing);
+
+        await _applicationDbContext.Books
+            .Where(i => i.Id == borrowing.BookId)
+            .ExecuteUpdateAsync(x => x.SetProperty(p => p.IsAvailable,false));
 
         await _applicationDbContext.SaveChangesAsync();
     }
@@ -27,8 +35,15 @@ internal class BorrowingService(ApplicationDbContext applicationDbContext) : IBo
         return await _applicationDbContext.Borrowings.AnyAsync(b => b.UserId == borrowing.UserId && b.BookId == borrowing.BookId);
     }
 
-    public Task<IEnumerable<Book>> SelectAllUserBorrowingsAsync(int userId)
+    public async Task<IEnumerable<Book>> SelectAllUserBorrowingsAsync(int userId)
     {
-        throw new NotImplementedException();
+        var booksList = await _applicationDbContext.Borrowings
+            .Where(u => u.UserId == userId).Select(b => b.BookId)
+            .Join(_applicationDbContext.Books,
+                (bookId) => bookId,
+                (book) => book.Id,
+                (bookId,book) => book).ToListAsync();
+
+        return booksList;
     }
 }

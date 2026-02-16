@@ -4,6 +4,7 @@ using LibrarySystem.Application.Features.Borrowing.Create;
 using LibrarySystem.Application.Features.Borrowing.Delete;
 using LibrarySystem.Application.Features.Borrowing.GetUserBorrowing;
 using LibrarySystem.Application.Features.User.GetUser;
+using LibrarySystem.Infrastructure.Migrations;
 using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -83,7 +84,18 @@ public class BorrowingController(IMediator mediator) : Controller
         {
             var book = await _mediator.Send(new GetOneBookCommand(id));
 
-            return View(book);
+
+
+            Book model = new Book
+            {
+                Title = book.Title,
+                Author = book.Author,
+                Description = book.Description,
+                ISBN = book.ISBN,
+                Id = book.Id
+            };
+
+            return View(model);
         }
         catch(Exception)
         {
@@ -120,7 +132,16 @@ public class BorrowingController(IMediator mediator) : Controller
         {
             var book = await _mediator.Send(new GetOneBookCommand(id));
 
-            return View(book);
+            Book model = new Book
+            {
+                Title = book.Title,
+                Author = book.Author,
+                Description = book.Description,
+                ISBN = book.ISBN,
+                Id = book.Id
+            };
+
+            return View(model);
         }
         catch(Exception)
         {

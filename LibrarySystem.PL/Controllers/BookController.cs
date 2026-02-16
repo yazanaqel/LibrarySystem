@@ -7,10 +7,12 @@ using LibrarySystem.Application.Features.Book.Search;
 using LibrarySystem.Application.Features.Book.Update;
 using LibrarySystem.Application.Features.Borrowing.IsBorrowedByMe;
 using LibrarySystem.Application.Features.User.GetUser;
+using LibrarySystem.Infrastructure;
 using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 

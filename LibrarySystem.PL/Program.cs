@@ -10,7 +10,7 @@ builder.Services.AddAuthentication(
     .AddCookie(option =>
     {
         option.LoginPath = "/User/Login";
-        option.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        option.ExpireTimeSpan = TimeSpan.FromDays(30);
 
     });
 
@@ -20,6 +20,12 @@ builder.Services.AddAuthentication(
 builder.Host.UseSerilog((context,config) =>
 {
     config.ReadFrom.Configuration(context.Configuration);
+});
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "MyApp:"; // optional prefix for keys
 });
 
 

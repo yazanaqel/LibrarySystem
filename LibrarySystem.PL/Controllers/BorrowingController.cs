@@ -1,10 +1,8 @@
 ﻿using LibrarySystem.Application.Features.Book.GetOneBook;
-using LibrarySystem.Application.Features.Book.IsAvailable;
 using LibrarySystem.Application.Features.Borrowing.Create;
 using LibrarySystem.Application.Features.Borrowing.Delete;
 using LibrarySystem.Application.Features.Borrowing.GetUserBorrowing;
 using LibrarySystem.Application.Features.User.GetUser;
-using LibrarySystem.Infrastructure.Migrations;
 using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -52,20 +50,18 @@ public class BorrowingController(IMediator mediator) : Controller
         try
         {
 
-
-            bool isAvailable = await _mediator.Send(new IsAvailableCommand(bookId));
-
             var book = await _mediator.Send(new GetOneBookCommand(bookId));
 
 
             Book model = new Book
             {
-                IsAvilable = isAvailable,
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ISBN = book.ISBN,
-                Id = book.Id
+                IsAvilable = book.Value.IsAvilable,
+                Title = book.Value.Title,
+                Author = book.Value.Author,
+                Description = book.Value.Description,
+                ISBN = book.Value.ISBN,
+                Id = bookId,
+                ImageURL = book.Value.ImageUrl,
             };
 
             return View(model);
@@ -88,11 +84,12 @@ public class BorrowingController(IMediator mediator) : Controller
 
             Book model = new Book
             {
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ISBN = book.ISBN,
-                Id = book.Id
+                Title = book.Value.Title,
+                Author = book.Value.Author,
+                Description = book.Value.Description,
+                ISBN = book.Value.ISBN,
+                Id = id,
+                ImageURL = book.Value.ImageUrl,
             };
 
             return View(model);
@@ -134,11 +131,12 @@ public class BorrowingController(IMediator mediator) : Controller
 
             Book model = new Book
             {
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ISBN = book.ISBN,
-                Id = book.Id
+                Title = book.Value.Title,
+                Author = book.Value.Author,
+                Description = book.Value.Description,
+                ISBN = book.Value.ISBN,
+                Id = id,
+                ImageURL = book.Value.ImageUrl,
             };
 
             return View(model);

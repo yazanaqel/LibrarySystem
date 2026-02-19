@@ -14,6 +14,11 @@ internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IReq
         {
             var booksList = await _bookService.SelectAllBooksAsync();
 
+            if(booksList is null || booksList.Count() == 0)
+            {
+                return Result<List<GetAllBooksResponse>>.Failure("Not Found!");
+            }
+
             return Result<List<GetAllBooksResponse>>.Success(booksList.Select(book => new GetAllBooksResponse
             (
                 book.Id,
@@ -22,9 +27,9 @@ internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IReq
 
             )).ToList());
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            return Result<List<GetAllBooksResponse>>.Failure(ex.Message);
+            return Result<List<GetAllBooksResponse>>.Failure("Error");
         }
     }
 }

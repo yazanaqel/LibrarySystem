@@ -30,7 +30,7 @@ public static class DependencyInjection
 
         services.AddTransient(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
 
-        services.AddTransient(typeof(IPipelineBehavior<,>),typeof(CachingBehavior<,>));
+        //services.AddTransient(typeof(IPipelineBehavior<,>),typeof(CachingBehavior<,>));
 
 
 

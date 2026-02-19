@@ -2,17 +2,14 @@
 using LibrarySystem.Application.Features.Book.Delete;
 using LibrarySystem.Application.Features.Book.GetAllBooks;
 using LibrarySystem.Application.Features.Book.GetOneBook;
-using LibrarySystem.Application.Features.Book.IsAvailable;
 using LibrarySystem.Application.Features.Book.Search;
 using LibrarySystem.Application.Features.Book.Update;
 using LibrarySystem.Application.Features.Borrowing.IsBorrowedByMe;
 using LibrarySystem.Application.Features.User.GetUser;
-using LibrarySystem.Infrastructure;
 using LibrarySystem.PL.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
@@ -121,24 +118,22 @@ public class BookController(IMediator mediator) : Controller
         {
             var book = await _mediator.Send(new GetOneBookCommand(id));
 
-            if(book is null)
-                return NotFound();
-
-            bool isAvailable = await _mediator.Send(new IsAvailableCommand(id));
+            if(book.IsFailure)
+                return NotFound(book.Error);
 
             Book model = new Book
             {
-                IsAvilable = isAvailable,
-                Title = book.Title,
-                Author = book.Author,
-                Description = book.Description,
-                ISBN = book.ISBN,
+                IsAvilable = book.Value.IsAvilable,
+                Title = book.Value.Title,
+                Author = book.Value.Author,
+                Description = book.Value.Description,
+                ISBN = book.Value.ISBN,
                 Id = id,
-                ImageURL = book.ImageUrl,
+                ImageURL = book.Value.ImageUrl,
             };
 
 
-            if(!isAvailable && claimUser.Identity.IsAuthenticated)
+            if(!book.Value.IsAvilable && claimUser.Identity.IsAuthenticated)
             {
                 var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
 
@@ -192,35 +187,23 @@ public class BookController(IMediator mediator) : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        try
+        var book = await _mediator.Send(new GetOneBookCommand(id));
+
+        if(book.IsFailure)
+            return NotFound(book.Error);
+
+        Book model = new Book
         {
-            var result = await _mediator.Send(new GetOneBookCommand(id));
+            IsAvilable = book.Value.IsAvilable,
+            Title = book.Value.Title,
+            Author = book.Value.Author,
+            Description = book.Value.Description,
+            ISBN = book.Value.ISBN,
+            Id = id,
+            ImageURL = book.Value.ImageUrl,
+        };
 
-
-            if(result is null)
-            {
-                return NotFound();
-            }
-
-            var book = new Models.Book
-            {
-                Id = result.Id,
-                Title = result.Title,
-                Author = result.Author,
-                Description = result.Description,
-                ISBN = result.ISBN,
-                ImageURL = result.ImageUrl,
-            };
-
-            return View(book);
-        }
-
-
-        catch(Exception)
-        {
-            ViewData["Error"] = "Something went wrong!";
-            return RedirectToAction(nameof(Index));
-        }
+        return View(model);
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -245,33 +228,23 @@ public class BookController(IMediator mediator) : Controller
 
     public async Task<IActionResult> Delete(int id)
     {
-        try
+        var book = await _mediator.Send(new GetOneBookCommand(id));
+
+        if(book.IsFailure)
+            return NotFound(book.Error);
+
+        Book model = new Book
         {
-            var result = await _mediator.Send(new GetOneBookCommand(id));
+            IsAvilable = book.Value.IsAvilable,
+            Title = book.Value.Title,
+            Author = book.Value.Author,
+            Description = book.Value.Description,
+            ISBN = book.Value.ISBN,
+            Id = id,
+            ImageURL = book.Value.ImageUrl,
+        };
 
-
-            if(result is null)
-            {
-                return NotFound();
-            }
-
-            var book = new Models.Book
-            {
-                Id = result.Id,
-                Title = result.Title,
-                Author = result.Author,
-                Description = result.Description,
-                ISBN = result.ISBN,
-                ImageURL = result.ImageUrl,
-            };
-
-            return View(book);
-        }
-        catch(Exception)
-        {
-            ViewData["Error"] = "Something went wrong!";
-            return RedirectToAction(nameof(Index));
-        }
+        return View(model);
     }
     [HttpPost]
     [ActionName("Delete")]

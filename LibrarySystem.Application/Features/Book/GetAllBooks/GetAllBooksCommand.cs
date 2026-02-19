@@ -8,6 +8,6 @@ public record GetAllBooksCommand() : IRequest<Result<List<GetAllBooksResponse>>>
 {
     public string CacheKey => "Books";
 
-    public TimeSpan? Expiration => TimeSpan.FromMinutes(1);
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(10);
 
 }

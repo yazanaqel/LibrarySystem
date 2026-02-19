@@ -22,11 +22,6 @@ public class BookService(ApplicationDbContext applicationDbContext) : IBookServi
         await _applicationDbContext.SaveChangesAsync();
     }
 
-    public async Task<bool> IsAvailable(int id)
-    {
-        return await _applicationDbContext.Books.AnyAsync(b => b.Id == id && b.IsAvailable);
-    }
-
     public async Task<List<Book>> Search(string key,string value)
     {
         List<Book> books = new();

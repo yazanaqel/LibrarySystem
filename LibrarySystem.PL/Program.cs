@@ -1,5 +1,6 @@
 using LibrarySystem.Application;
 using LibrarySystem.Infrastructure;
+using LibrarySystem.PL.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Serilog;
 
@@ -46,6 +47,11 @@ if(!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<RequestLogContextMiddleware>();
+
+app.UseSerilogRequestLogging();
+
 app.UseStaticFiles();
 
 app.UseRouting();

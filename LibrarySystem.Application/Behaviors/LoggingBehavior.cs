@@ -1,10 +1,12 @@
-﻿using MediatR;
+﻿using LibrarySystem.Domain.Shared;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace LibrarySystem.Application.Behaviors;
 
-public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest,TResponse>> logger)
-    : IPipelineBehavior<TRequest,TResponse> where TRequest : notnull
+public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest,TResponse>> logger)
+    : IPipelineBehavior<TRequest,TResponse> where TRequest : class /*where TResponse : Result*/
+
 {
     private readonly ILogger<LoggingBehavior<TRequest,TResponse>> _logger = logger;
 

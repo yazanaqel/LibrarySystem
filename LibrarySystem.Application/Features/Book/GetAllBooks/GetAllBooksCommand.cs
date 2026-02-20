@@ -4,7 +4,7 @@ using LibrarySystem.Domain.Shared;
 
 namespace LibrarySystem.Application.Features.Book.GetAllBooks;
 
-public record GetAllBooksCommand() : IQuery<List<GetAllBooksResponse>>, ICacheableQuery
+public sealed record GetAllBooksCommand() : IQuery<List<GetAllBooksResponse>>, ICacheableQuery
 {
     public string CacheKey => "Books";
 

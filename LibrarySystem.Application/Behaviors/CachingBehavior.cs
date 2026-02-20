@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace LibrarySystem.Application.Behaviors;
 
-public class CachingBehavior<TRequest, TResponse>
+public sealed class CachingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest,TResponse>
     where TRequest : IRequest<TResponse>
 {

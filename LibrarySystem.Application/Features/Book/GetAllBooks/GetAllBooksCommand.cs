@@ -1,10 +1,10 @@
 ﻿using LibrarySystem.Application.CacheService;
+using LibrarySystem.Application.Messaging;
 using LibrarySystem.Domain.Shared;
-using MediatR;
 
 namespace LibrarySystem.Application.Features.Book.GetAllBooks;
 
-public record GetAllBooksCommand() : IRequest<Result<List<GetAllBooksResponse>>>, ICacheableQuery
+public record GetAllBooksCommand() : IQuery<List<GetAllBooksResponse>>, ICacheableQuery
 {
     public string CacheKey => "Books";
 

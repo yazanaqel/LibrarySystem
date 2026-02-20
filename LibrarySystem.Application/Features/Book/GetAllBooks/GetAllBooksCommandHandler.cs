@@ -1,10 +1,11 @@
-﻿using LibrarySystem.Domain.Repositories;
+﻿using LibrarySystem.Application.Messaging;
+using LibrarySystem.Domain.Repositories;
 using LibrarySystem.Domain.Shared;
 using MediatR;
 
 namespace LibrarySystem.Application.Features.Book.GetAllBooks;
 
-internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IRequestHandler<GetAllBooksCommand,Result<List<GetAllBooksResponse>>>
+internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IQueryHandler<GetAllBooksCommand,List<GetAllBooksResponse>>
 {
     private readonly IBookService _bookService = bookService;
 
@@ -32,4 +33,5 @@ internal sealed class GetAllBooksCommandHandler(IBookService bookService) : IReq
             return Result<List<GetAllBooksResponse>>.Failure("Error");
         }
     }
+
 }

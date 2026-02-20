@@ -114,45 +114,36 @@ public class BookController(IMediator mediator) : Controller
     {
         ClaimsPrincipal claimUser = HttpContext.User;
 
-        try
+        var book = await _mediator.Send(new GetOneBookCommand(id));
+
+        if(book.IsFailure)
+            return NotFound(book.Error);
+
+        Book model = new Book
         {
-            var book = await _mediator.Send(new GetOneBookCommand(id));
+            IsAvilable = book.Value.IsAvilable,
+            Title = book.Value.Title,
+            Author = book.Value.Author,
+            Description = book.Value.Description,
+            ISBN = book.Value.ISBN,
+            Id = id,
+            ImageURL = book.Value.ImageUrl,
+        };
 
-            if(book.IsFailure)
-                return NotFound(book.Error);
 
-            Book model = new Book
+        if(!book.Value.IsAvilable && claimUser.Identity.IsAuthenticated)
+        {
+            var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
+
+            bool borrowedByMe = await _mediator.Send(new IsBorrowedByMeCommand(user.Id,id));
+
+            if(borrowedByMe)
             {
-                IsAvilable = book.Value.IsAvilable,
-                Title = book.Value.Title,
-                Author = book.Value.Author,
-                Description = book.Value.Description,
-                ISBN = book.Value.ISBN,
-                Id = id,
-                ImageURL = book.Value.ImageUrl,
-            };
-
-
-            if(!book.Value.IsAvilable && claimUser.Identity.IsAuthenticated)
-            {
-                var user = await _mediator.Send(new GetUserCommand(User.Identity.Name));
-
-                bool borrowedByMe = await _mediator.Send(new IsBorrowedByMeCommand(user.Id,id));
-
-                if(borrowedByMe)
-                {
-                    model.IsBorrowedByMe = true;
-                }
+                model.IsBorrowedByMe = true;
             }
-
-            return View(model);
         }
 
-        catch(Exception)
-        {
-            ViewData["Error"] = "Something went wrong!";
-            return RedirectToAction(nameof(Index));
-        }
+        return View(model);
     }
 
 
@@ -165,12 +156,6 @@ public class BookController(IMediator mediator) : Controller
         {
 
             var request = new CreateBookRequest(book.Title,book.Author,book.ISBN,book.Description,book.File);
-
-            //if(bookIsdnCheck is not null)
-            //{
-            //    ViewData["Error"] = "Sorry this ISDN is exist!";
-            //    return View();
-            //}
 
             await _mediator.Send(new CreateBookCommand(request));
 

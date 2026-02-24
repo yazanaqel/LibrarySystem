@@ -22,56 +22,43 @@ public class BookService(ApplicationDbContext applicationDbContext) : IBookServi
         await _applicationDbContext.SaveChangesAsync();
     }
 
-    public async Task<List<Book>> Search(string key,string value)
+    public async Task<List<Book>> Search(string key,string value) => key switch
     {
-        List<Book> books = new();
-
-        switch(key)
-        {
-            case "title":
-
-                return books = await _applicationDbContext.Books
+        "title" => await _applicationDbContext.Books
                     .AsNoTracking()
-                          .Where(b => b.Title.Contains(value))
-                          .Select(b => b).ToListAsync();
+                        .Where(b => b.Title.Contains(value))
+                        .Select(b => b).ToListAsync(),
 
-            case "author":
-
-                return books = await _applicationDbContext.Books
+        "author" => await _applicationDbContext.Books
                     .AsNoTracking()
-                          .Where(b => b.Author.Contains(value))
-                          .Select(b => b).ToListAsync();
+                        .Where(b => b.Author.Contains(value))
+                        .Select(b => b).ToListAsync(),
 
-            case "isdn":
-
-                return books = await _applicationDbContext.Books
+        "isdn" => await _applicationDbContext.Books
                     .AsNoTracking()
-                          .Where(b => b.ISBN.Contains(value))
-                          .Select(b => b).ToListAsync();
+                        .Where(b => b.ISBN.Contains(value))
+                        .Select(b => b).ToListAsync(),
 
-            default:
-                return books;
-
-        }
-    }
+        _ => new List<Book>()
+    };
 
     public async Task<IEnumerable<Book>> SelectAllBooksAsync()
         => await _applicationDbContext.Books.AsNoTracking().ToListAsync();
 
-    public async Task<Book> SelectBookAsync(int id)
-        => await _applicationDbContext.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
+public async Task<Book> SelectBookAsync(int id)
+    => await _applicationDbContext.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
 
-    public async Task UpdateBookAsync(Book book)
-    {
-        await _applicationDbContext.Books
-            .Where(b => b.Id == book.Id)
-            .ExecuteUpdateAsync(setters =>
-                setters
-                    .SetProperty(b => b.Title,book.Title)
-                    .SetProperty(b => b.Author,book.Author)
-                    .SetProperty(b => b.Description,book.Description)
-                    .SetProperty(b => b.ImageURL,book.ImageURL));
+public async Task UpdateBookAsync(Book book)
+{
+    await _applicationDbContext.Books
+        .Where(b => b.Id == book.Id)
+        .ExecuteUpdateAsync(setters =>
+            setters
+                .SetProperty(b => b.Title,book.Title)
+                .SetProperty(b => b.Author,book.Author)
+                .SetProperty(b => b.Description,book.Description)
+                .SetProperty(b => b.ImageURL,book.ImageURL));
 
 
-    }
+}
 }
